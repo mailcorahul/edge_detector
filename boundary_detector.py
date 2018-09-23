@@ -165,37 +165,14 @@ def find_boundary(img, edged):
 	h1 , w1 = edged.shape[:2] ;
 
 	quad = np.array(detect_lines(edged)) ;
-	pts = quad.tolist() ;
-	pts.sort() ;
-	
-	if pts[0][0][1] > pts[1][0][1] :
-		temp = pts[0] ;
-		pts[0] = pts[1] ;
-		pts[1] = temp ;
-
-	if pts[2][0][1] > pts[3][0][1] :
-		temp = pts[2] ;
-		pts[2] = pts[3] ;
-		pts[3] = temp ;
-
-	# converting from resized coordinates to actual coordinates 
-	ptsA = np.zeros((4,1,2)) ;
-	i = 0 ;
-	for pt in pts :
-		ptsA[i][0][0] = int(math.ceil(( float(pt[0][0]) / w1 ) * w2 )) ;
-		ptsA[i][0][1] = int(math.ceil(( float(pt[0][1]) / h1 ) * h2 )) ; 
-		i += 1 ;
-
 	cont = img.copy() ;
-	cv2.drawContours(cont,[cv2.convexHull(quad)], -1, (0,0,255), 3)
+	cv2.drawContours(cont,[quad], -1, (0,0,255), 3);
 
-	pts = [] ;
-	for i in range(quad.shape[0]) :
-		pts.append(quad[i][0]) ;
-
-	pts = sorted(pts, key=itemgetter(0)) ;
-	_pts = sorted(pts[2:], key=itemgetter(1)) ;
-	pts = pts[:2] + _pts ;
+	pts = np.float32(quad.reshape((quad.shape[0], quad.shape[2])));	
+	pts = sorted(pts, key=itemgetter(1));
+	_pts1 = sorted(pts[:2], key=itemgetter(0));
+	_pts2 = sorted(pts[2:], key=itemgetter(0));
+	pts = np.float32([_pts1[0],_pts2[0], _pts1[1], _pts2[1]]);
 
 	pts = np.float32(pts) ;
 	wpts = np.float32([[0,0],[0,h2],[w2,0],[w2,h2]]) ;
